@@ -26,12 +26,6 @@ public class AdminUserCRUImpl implements AdminUserCRU{
                 adminuserdtofromservice.setOperationSuccess(false);
                 return adminuserdtofromservice;
             }
-            if (adminuserjparepository.existsByCountryCodeAndMobileNumber(dto.getCountryCode(), dto.getMobileNumber())) {
-                adminuserdtofromservice.setData(null);
-                adminuserdtofromservice.setMessage("User with this country code + mobile number already exists.");
-                adminuserdtofromservice.setOperationSuccess(false);
-                return adminuserdtofromservice;
-            }
             AdminUser user = adminuserjparepository.save(AdminUser.fromAdminUserDTOToAdminUser(dto));
             AdminUserDTO dtoData = AdminUserDTO.fromAdminUserToAdminUserDTO(user);
             adminuserdtofromservice.setData(dtoData);

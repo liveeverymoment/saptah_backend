@@ -39,12 +39,6 @@ public class AdminUserDTO {
     @NotBlank(message = "City can not be empty", groups = {CreateAdminUserDTO.class})
     String city;
 
-    @NotBlank(message = "Mobile number can not be empty", groups = {CreateAdminUserDTO.class})
-    String mobileNumber;
-
-    @NotBlank(message = "Country code can not be empty", groups = {CreateAdminUserDTO.class})
-    String countryCode;
-
     Boolean isValidated;
 
     public static AdminUserDTO fromAdminUserToAdminUserDTO(AdminUser user){

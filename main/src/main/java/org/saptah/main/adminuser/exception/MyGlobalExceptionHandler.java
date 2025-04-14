@@ -29,16 +29,4 @@ public class MyGlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<?> handleDuplicateKey(DataIntegrityViolationException ex) {
-        LinkedHashMap<String, Object> errors = new LinkedHashMap<>();
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        // extract field errors
-        errors.put("error",ex.getMessage());
-        response.put("status", HttpStatus.CONFLICT.value());
-        response.put("message", "Duplicate email or country code + mobile number.");
-        response.put("errors", errors);
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-    }
-
 }

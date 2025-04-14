@@ -52,12 +52,6 @@ public class AdminUser {
     @Column(nullable = false)
     String city;
 
-    @Column(name = "mobile_number", nullable = false)
-    String mobileNumber;
-
-    @Column(name = "country_code", nullable = false)
-    String countryCode;
-
     @Column(name = "is_validated")
     Boolean isValidated;
 
@@ -69,8 +63,6 @@ public class AdminUser {
                 .country(dto.getCountry())
                 .state(dto.getState())
                 .city(dto.getCity())
-                .mobileNumber(dto.getMobileNumber())
-                .countryCode(dto.getCountryCode())
                 .lastName(Optional.ofNullable(dto.getLastName())
                         .filter(lastname->!lastname.isEmpty())
                         .orElse(null))
