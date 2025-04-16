@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.saptah.main.adminuser.dto.AdminUserDTO;
 
+import java.util.List;
 import java.util.Optional;
 
 @Entity
@@ -11,7 +12,6 @@ import java.util.Optional;
         name = "admin_user",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"email"}),
-                @UniqueConstraint(columnNames = {"country_code", "mobile_number"})
         }
 )
 @Getter
@@ -23,37 +23,40 @@ public class AdminUser {
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    private long id;
 
     @Column(nullable = false, unique = true)
-    String email;
+    private String email;
 
     @Column(nullable = false)
-    String password;
+    private String password;
 
     @Column(name = "first_name_middle_name", nullable = false)
-    String firstNameMiddleName;
+    private String firstNameMiddleName;
 
     @Column(name = "last_name")
-    String lastName;
+    private String lastName;
 
     @Column(nullable = false)
-    String country;
+    private String country;
 
     @Column(nullable = false)
-    String state;
+    private String state;
 
     @Column
-    String district;
+    private String district;
 
     @Column
-    String taluka;
+    private String taluka;
 
     @Column(nullable = false)
-    String city;
+    private String city;
 
     @Column(name = "is_validated")
-    Boolean isValidated;
+    private Boolean isValidated;
+
+    @OneToMany(mappedBy = "adminUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VerificationToken> verificationTokens;
 
     public static AdminUser fromAdminUserDTOToAdminUser(AdminUserDTO dto){
         return AdminUser.builder()
@@ -63,6 +66,7 @@ public class AdminUser {
                 .country(dto.getCountry())
                 .state(dto.getState())
                 .city(dto.getCity())
+                .isValidated(false)
                 .lastName(Optional.ofNullable(dto.getLastName())
                         .filter(lastname->!lastname.isEmpty())
                         .orElse(null))

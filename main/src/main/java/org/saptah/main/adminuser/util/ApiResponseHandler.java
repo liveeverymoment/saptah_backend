@@ -7,7 +7,10 @@ public class ApiResponseHandler {
     public static ResponseEntity<ApiResponseDTO> createSuccess(ApiResponseDTO dto){
         return ResponseEntity.status(201).body(dto);
     }
-    public static ResponseEntity<ApiResponseDTO> createFailed(ApiResponseDTO dto, int status){
+    public static ResponseEntity<ApiResponseDTO> operationFailed(ApiResponseDTO dto, int status){
         return ResponseEntity.status(status).body(dto);
+    }
+    public static ResponseEntity<ApiResponseDTO> operationSuccess(ApiResponseDTO dto){
+        return ResponseEntity.status(200).body(dto);
     }
 }

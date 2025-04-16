@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.saptah.main.adminuser.entity.AdminUser;
+import org.saptah.main.adminuser.util.AdminUserLoginDTOGroup;
 import org.saptah.main.adminuser.util.CreateAdminUserDTO;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -15,10 +16,10 @@ import org.saptah.main.adminuser.util.CreateAdminUserDTO;
 @AllArgsConstructor
 @Builder
 public class AdminUserDTO {
-    @NotBlank(message = "Email can not be empty", groups = {CreateAdminUserDTO.class})
+    @NotBlank(message = "Email can not be empty", groups = {CreateAdminUserDTO.class, AdminUserLoginDTOGroup.class})
     String email;
 
-    @NotBlank(message = "Password can not be empty", groups = {CreateAdminUserDTO.class})
+    @NotBlank(message = "Password can not be empty", groups = {CreateAdminUserDTO.class, AdminUserLoginDTOGroup.class})
     String password;
 
     @NotBlank(message = "First name + middle name can not be empty", groups = {CreateAdminUserDTO.class})
