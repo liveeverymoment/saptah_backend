@@ -3,9 +3,14 @@ package org.saptah.main.adminuser.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.saptah.main.adminuser.dto.AdminUserDTO;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Entity
 @Table(
@@ -19,7 +24,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AdminUser {
+public class AdminUser implements UserDetails {
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,6 +63,14 @@ public class AdminUser {
     @OneToMany(mappedBy = "adminUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VerificationToken> verificationTokens;
 
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+            name="admin_user_roles",
+            joinColumns = @JoinColumn(name = "admin_user_id"))
+    @Column(name="role")
+    private Set<Role> authorities;
+
     public static AdminUser fromAdminUserDTOToAdminUser(AdminUserDTO dto){
         return AdminUser.builder()
                 .email(dto.getEmail())
@@ -76,6 +89,36 @@ public class AdminUser {
                 .taluka(Optional.ofNullable(dto.getTaluka())
                         .filter(taluka->!taluka.isEmpty())
                         .orElse(null))
+                .authorities(Set.of(Role.ROLE_ADMIN))
                 .build();
+    }
+
+    @Override
+    public String getUsername() {
+        return getEmail();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        // return UserDetails.super.isAccountNonExpired();
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        // return UserDetails.super.isAccountNonLocked();
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        // return UserDetails.super.isCredentialsNonExpired();
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        // return UserDetails.super.isEnabled();
+        return true;
     }
 }

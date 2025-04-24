@@ -9,6 +9,9 @@ import org.saptah.main.adminuser.util.MessagesBetweenLayers;
 import org.saptah.main.adminuser.events.OnUserRegistrationCompleteEvent;
 import org.saptah.main.adminuser.util.MyHashWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,10 +27,16 @@ public class AdminUserCRUImpl implements AdminUserCRU{
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
+    private AuthenticationManager authenticationmanager;
+
+    @Autowired
     private AdminUserJPARepository adminuserjparepository;
 
     @Autowired
     private AdminUserDTOFromService adminuserdtofromservice;
+
+    @Autowired
+    private JWTService jwtservice;
 
     @Override
     public AdminUserDTOFromService createAdminUser(AdminUserDTO dto) {
@@ -61,30 +70,29 @@ public class AdminUserCRUImpl implements AdminUserCRU{
     public Map<String,Object> AdminUserLoginValidationAndJWTSend(String email, String password){
         Map<String, Object> output = new HashMap<>();
         try{
-            BCryptPasswordEncoder encoder = MyHashWrapper.getBCryptPasswordEncoderInstance();
             AdminUser user = adminuserjparepository.findByEmail(email);
             if(user==null){
                 System.out.println("user not found");
                 throw new Exception("user not found");
             }
-            boolean match = encoder.matches(password, user.getPassword());
-            if(!match){
-                System.out.println("invalid user password");
-                throw new Exception("invalid user password");
-            }
-            if(user.getIsValidated()){
-                // call jwt service to create jwt.
-                output.put("message","Login successful.");
-                output.put("error",null);
-                output.put("output",true);
-                output.put("jwt",null);
-            }else{
-                // offload email verification link process
-                applicationEventPublisher.publishEvent(new OnUserLoginNoVerification(user));
-                output.put("message","User email not validated.");
-                output.put("email_validated",false);
-                output.put("error",null);
-                output.put("output",false);
+            Authentication authentication = authenticationmanager.
+                    authenticate(new UsernamePasswordAuthenticationToken(email,password));
+            if(authentication.isAuthenticated()){
+                if(user.getIsValidated()){
+                    // call jwt service to create jwt.
+                    String jwt = jwtservice.generateJWT(user);
+                    output.put("message","Login successful.");
+                    output.put("error",null);
+                    output.put("output",true);
+                    output.put("jwt",jwt);
+                }else{
+                    // offload email verification link process
+                    applicationEventPublisher.publishEvent(new OnUserLoginNoVerification(user));
+                    output.put("message","User email not validated.");
+                    output.put("email_validated",false);
+                    output.put("error",null);
+                    output.put("output",false);
+                }
             }
         } catch (Exception e) {
             output.put("message","Incorrect email or password.");
