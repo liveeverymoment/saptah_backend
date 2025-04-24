@@ -7,7 +7,10 @@ import org.saptah.main.adminuser.events.OnUserLoginNoVerification;
 import org.saptah.main.adminuser.repository.AdminUserJPARepository;
 import org.saptah.main.adminuser.util.MessagesBetweenLayers;
 import org.saptah.main.adminuser.events.OnUserRegistrationCompleteEvent;
+import org.saptah.main.adminuser.util.MyHashWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -35,7 +38,12 @@ public class AdminUserCRUImpl implements AdminUserCRU{
                 adminuserdtofromservice.setOperationSuccess(false);
                 return adminuserdtofromservice;
             }
-            AdminUser user = adminuserjparepository.save(AdminUser.fromAdminUserDTOToAdminUser(dto));
+            AdminUser fromDTO = AdminUser.fromAdminUserDTOToAdminUser(dto);
+            BCryptPasswordEncoder encoder = MyHashWrapper.getBCryptPasswordEncoderInstance();
+            String encodedPass = encoder.encode(fromDTO.getPassword());
+            System.out.println("password: "+fromDTO.getPassword()+", encodedPass: "+encodedPass);
+            fromDTO.setPassword(encodedPass);
+            AdminUser user = adminuserjparepository.save(fromDTO);
             applicationEventPublisher.publishEvent(new OnUserRegistrationCompleteEvent(user));
             AdminUserDTO dtoData = AdminUserDTO.fromAdminUserToAdminUserDTO(user);
             adminuserdtofromservice.setData(dtoData);
@@ -53,7 +61,17 @@ public class AdminUserCRUImpl implements AdminUserCRU{
     public Map<String,Object> AdminUserLoginValidationAndJWTSend(String email, String password){
         Map<String, Object> output = new HashMap<>();
         try{
-            AdminUser user = adminuserjparepository.findByEmailAndPassword(email,password);
+            BCryptPasswordEncoder encoder = MyHashWrapper.getBCryptPasswordEncoderInstance();
+            AdminUser user = adminuserjparepository.findByEmail(email);
+            if(user==null){
+                System.out.println("user not found");
+                throw new Exception("user not found");
+            }
+            boolean match = encoder.matches(password, user.getPassword());
+            if(!match){
+                System.out.println("invalid user password");
+                throw new Exception("invalid user password");
+            }
             if(user.getIsValidated()){
                 // call jwt service to create jwt.
                 output.put("message","Login successful.");

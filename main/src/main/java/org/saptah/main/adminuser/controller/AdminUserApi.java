@@ -40,11 +40,15 @@ public class AdminUserApi {
         }
     }
 
-    @GetMapping("/test")
+}
+
+
+@RestController
+class Test{
+    @GetMapping("/v1/test")
     public String test() {
         return "Ram Krishna Hari!";
     }
-
 }
 
 @RestController
