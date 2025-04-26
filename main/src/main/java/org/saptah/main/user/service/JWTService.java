@@ -1,7 +1,6 @@
 package org.saptah.main.user.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
@@ -82,10 +81,40 @@ public class JWTService {
 
     private Claims extractAllClaims(String token) {
         return Jwts
-                .parser()
-                .verifyWith(getKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                    .parser()
+                    .verifyWith(getKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+    }
+
+    public void checkMalFormedJwt(String token) {
+        if(token == null || token.trim().isEmpty()){
+            throw new JwtException("Empty jwt string");
+        }
+        String[] parts = token.split("\\.");
+        if(parts.length != 3){
+            throw new JwtException("Invalid jwt format");
+        }
+        try{
+             Jwts
+                    .parser()
+                    .verifyWith(getKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        }
+        catch(MalformedJwtException e){
+            throw new JwtException("Invalid jwt structure",e);
+        }
+        catch(UnsupportedJwtException e){
+            throw new JwtException("Unsupported jwt",e);
+        }
+        catch(ExpiredJwtException e){
+            throw new JwtException("Expired jwt", e);
+        }
+        catch(JwtException e){
+            throw new JwtException("Jwt validation failed",e);
+        }
     }
 }
